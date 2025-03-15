@@ -6,6 +6,7 @@ import { BookSearchForm } from "./components/BookSearchForm";
 import { useBookSearch } from "./hooks/useBookSearch";
 import { SearchResultItem } from "./components/SearchResultItem";
 import { useBooks } from "./hooks/useBooks";
+import { useLocalStorage } from "@raycast/utils";
 
 export default function Command() {
   const [searchText, setSearchText] = useState("");
@@ -60,6 +61,34 @@ export default function Command() {
     };
   }, [allBooks]);
 
+  const { value: columns = 5, setValue: setColumns } = useLocalStorage<number>("columns", 5);
+
+  const zoomIn = () => {
+    if (columns < 8) {
+      setColumns(columns + 1);
+    } else {
+      showToast({
+        style: Toast.Style.Failure,
+        title: "最多只能放大到 8 列",
+      });
+    }
+  };
+
+  const zoomOut = () => {
+    if (columns > 4) {
+      setColumns(columns - 1);
+    } else {
+      showToast({
+        style: Toast.Style.Failure,
+        title: "最少只能缩小到 4 列",
+      });
+    }
+  };
+
+  const resetColumns = () => {
+    setColumns(5);
+  };
+
   // 构建网格部分
   const renderSections = () => {
     const sections = [];
@@ -94,6 +123,9 @@ export default function Command() {
                 updateBookStatus={updateBookStatus}
                 removeBook={removeBook}
                 updateBookRating={updateBookRating}
+                zoomIn={zoomIn}
+                zoomOut={zoomOut}
+                resetColumns={resetColumns}
               />
             ))}
           </Grid.Section>,
@@ -111,6 +143,9 @@ export default function Command() {
                 updateBookStatus={updateBookStatus}
                 removeBook={removeBook}
                 updateBookRating={updateBookRating}
+                zoomIn={zoomIn}
+                zoomOut={zoomOut}
+                resetColumns={resetColumns}
               />
             ))}
           </Grid.Section>,
@@ -128,6 +163,9 @@ export default function Command() {
                 updateBookStatus={updateBookStatus}
                 removeBook={removeBook}
                 updateBookRating={updateBookRating}
+                zoomIn={zoomIn}
+                zoomOut={zoomOut}
+                resetColumns={resetColumns}
               />
             ))}
           </Grid.Section>,
@@ -145,6 +183,9 @@ export default function Command() {
                 updateBookStatus={updateBookStatus}
                 removeBook={removeBook}
                 updateBookRating={updateBookRating}
+                zoomIn={zoomIn}
+                zoomOut={zoomOut}
+                resetColumns={resetColumns}
               />
             ))}
           </Grid.Section>,
@@ -163,6 +204,9 @@ export default function Command() {
               updateBookStatus={updateBookStatus}
               removeBook={removeBook}
               updateBookRating={updateBookRating}
+              zoomIn={zoomIn}
+              zoomOut={zoomOut}
+              resetColumns={resetColumns}
             />
           ))}
         </Grid.Section>,
@@ -174,11 +218,11 @@ export default function Command() {
 
   return (
     <Grid
-      columns={5} // 固定为5列
+      columns={columns}
       inset={Grid.Inset.Zero}
       isLoading={isLoadingRemote}
       onSearchTextChange={setSearchText}
-      searchBarPlaceholder="搜索书籍..."
+      searchBarPlaceholder="搜索书籍直接添加"
       searchBarAccessory={
         <Grid.Dropdown
           tooltip="筛选选项"

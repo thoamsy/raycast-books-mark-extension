@@ -44,8 +44,8 @@ export function SearchResultItem({ book, onBookAdded, addBook }: SearchResultIte
           </ActionPanel.Section>
 
           <ActionPanel.Section>
-            <Action.OpenInBrowser url={book.url} title="在豆瓣中查看" icon={{ source: "link" }} />
-            <Action.CopyToClipboard title="复制书名" content={book.title} icon={{ source: "doc.on.clipboard" }} />
+            <Action.OpenInBrowser url={book.url} title="在豆瓣中查看" />
+            <Action.CopyToClipboard title="复制书名" content={book.title} />
           </ActionPanel.Section>
         </ActionPanel>
       }
