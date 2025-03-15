@@ -59,7 +59,8 @@ export function RatingForm({ book, onRatingUpdated, updateBookRating }: RatingFo
     >
       <Form.Description text={`为《${book.title}》评分`} />
 
-      <Form.Dropdown id="rating" title="评分" defaultValue={book.rating?.toString() || "3"}>
+      <Form.Dropdown id="rating" title="评分" defaultValue={book.rating?.toString() || "0"}>
+        <Form.Dropdown.Item value="0" title="请评分" />
         <Form.Dropdown.Item value="1" title="⭐️ - 很差" />
         <Form.Dropdown.Item value="2" title="⭐️⭐️ - 较差" />
         <Form.Dropdown.Item value="3" title="⭐️⭐️⭐️ - 一般" />

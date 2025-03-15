@@ -158,7 +158,6 @@ export default function Command() {
       searchBarAccessory={
         <Grid.Dropdown
           tooltip="筛选选项"
-          storeValue
           onChange={(newValue) => {
             // 只处理状态过滤
             if (newValue === "all") {
