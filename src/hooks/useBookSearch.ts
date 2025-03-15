@@ -57,7 +57,7 @@ export function useBookSearch(query: string, searchLocalBooks?: (query: string) 
           setLocalResults(results);
 
           // 如果本地没有结果，触发远程搜索
-          if (results.length === 0) {
+          if (results.length === 0 && searchQuery.trim().length > 1) {
             setShouldFetch(true);
           }
         } else {
