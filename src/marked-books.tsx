@@ -95,6 +95,7 @@ export default function Command() {
 
     // 如果有远程搜索结果，添加搜索结果部分
     if (hasRemoteResults && searchText.trim()) {
+      // statusGroups.push({ title: "搜索结果", books: remoteBooks });
       sections.push(
         <Grid.Section aspectRatio="2/3" fit={Grid.Fit.Fill} title="搜索结果" key="search-results">
           {remoteBooks.map((book) => (
@@ -104,114 +105,45 @@ export default function Command() {
       );
     }
 
+    const statusGroups: { title: string; books: StoredBook[] }[] = [];
     // 如果没有选中状态，按状态分组显示
     if (!selectedStatus && !searchText.trim()) {
-      // 添加各状态部分
-      if (planToRead.length > 0) {
-        sections.push(
-          <Grid.Section
-            aspectRatio="2/3"
-            fit={Grid.Fit.Fill}
-            title={BookStatuses.plan_to_read.label}
-            key="plan-to-read"
-          >
-            {planToRead.map((book) => (
-              <BookItem
-                key={book.id}
-                book={book}
-                onBookUpdated={handleBookUpdated}
-                updateBookStatus={updateBookStatus}
-                removeBook={removeBook}
-                updateBookRating={updateBookRating}
-                zoomIn={zoomIn}
-                zoomOut={zoomOut}
-                resetColumns={resetColumns}
-              />
-            ))}
-          </Grid.Section>,
-        );
-      }
-
-      if (reading.length > 0) {
-        sections.push(
-          <Grid.Section aspectRatio="2/3" fit={Grid.Fit.Fill} title={BookStatuses.reading.label} key="reading">
-            {reading.map((book) => (
-              <BookItem
-                key={book.id}
-                book={book}
-                onBookUpdated={handleBookUpdated}
-                updateBookStatus={updateBookStatus}
-                removeBook={removeBook}
-                updateBookRating={updateBookRating}
-                zoomIn={zoomIn}
-                zoomOut={zoomOut}
-                resetColumns={resetColumns}
-              />
-            ))}
-          </Grid.Section>,
-        );
-      }
-
-      if (finished.length > 0) {
-        sections.push(
-          <Grid.Section aspectRatio="2/3" fit={Grid.Fit.Fill} title={BookStatuses.finished.label} key="finished">
-            {finished.map((book) => (
-              <BookItem
-                key={book.id}
-                book={book}
-                onBookUpdated={handleBookUpdated}
-                updateBookStatus={updateBookStatus}
-                removeBook={removeBook}
-                updateBookRating={updateBookRating}
-                zoomIn={zoomIn}
-                zoomOut={zoomOut}
-                resetColumns={resetColumns}
-              />
-            ))}
-          </Grid.Section>,
-        );
-      }
-
-      if (abandoned.length > 0) {
-        sections.push(
-          <Grid.Section aspectRatio="2/3" fit={Grid.Fit.Fill} title={BookStatuses.abandoned.label} key="abandoned">
-            {abandoned.map((book) => (
-              <BookItem
-                key={book.id}
-                book={book}
-                onBookUpdated={handleBookUpdated}
-                updateBookStatus={updateBookStatus}
-                removeBook={removeBook}
-                updateBookRating={updateBookRating}
-                zoomIn={zoomIn}
-                zoomOut={zoomOut}
-                resetColumns={resetColumns}
-              />
-            ))}
-          </Grid.Section>,
-        );
-      }
-    } else {
-      // 添加过滤后或搜索结果部分
-      const statusTitle = selectedStatus ? getStatusConfig(selectedStatus).label : "所有书籍";
-      sections.push(
-        <Grid.Section aspectRatio="2/3" fit={Grid.Fit.Fill} title={statusTitle} key="filtered-books">
-          {books.map((book) => (
-            <BookItem
-              key={book.id}
-              book={book}
-              onBookUpdated={handleBookUpdated}
-              updateBookStatus={updateBookStatus}
-              removeBook={removeBook}
-              updateBookRating={updateBookRating}
-              zoomIn={zoomIn}
-              zoomOut={zoomOut}
-              resetColumns={resetColumns}
-            />
-          ))}
-        </Grid.Section>,
+      // 为每种状态创建部分
+      statusGroups.push(
+        { title: BookStatuses.plan_to_read.label, books: planToRead },
+        { title: BookStatuses.reading.label, books: reading },
+        { title: BookStatuses.finished.label, books: finished },
+        { title: BookStatuses.abandoned.label, books: abandoned },
       );
+    } else {
+      statusGroups.push({
+        title: selectedStatus ? getStatusConfig(selectedStatus).label : "所有书籍",
+        books,
+      });
     }
+
+    // 只添加有书籍的状态分组
+    statusGroups.forEach(({ title, books }) => {
+      if (books.length > 0) {
+        sections.push(
+          <Grid.Section aspectRatio="2/3" fit={Grid.Fit.Fill} title={title} key={title}>
+            {books.map((book) => (
+              <BookItem
+                key={book.id}
+                book={book}
+                onBookUpdated={handleBookUpdated}
+                updateBookStatus={updateBookStatus}
+                removeBook={removeBook}
+                updateBookRating={updateBookRating}
+                zoomIn={zoomIn}
+                zoomOut={zoomOut}
+                resetColumns={resetColumns}
+              />
+            ))}
+          </Grid.Section>,
+        );
+      }
+    });
 
     return sections;
   };
