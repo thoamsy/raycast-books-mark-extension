@@ -1,6 +1,6 @@
-import { useState, useEffect, useCallback } from "react";
-import { ActionPanel, Action, Grid, showToast, Toast, Icon, Color } from "@raycast/api";
-import { BookStatus, StoredBook } from "./types/book";
+import { useState, useEffect, useCallback, useMemo } from "react";
+import { ActionPanel, Action, Grid, showToast, Toast, Icon } from "@raycast/api";
+import { BookStatusValue, BookStatuses, getAllStatuses, getStatusConfig, StoredBook } from "./types/book";
 import { BookItem } from "./components/BookItem";
 import { BookSearchForm } from "./components/BookSearchForm";
 import { useBookSearch } from "./hooks/useBookSearch";
@@ -10,7 +10,7 @@ import { useBooks } from "./hooks/useBooks";
 export default function Command() {
   const [searchText, setSearchText] = useState("");
   const [books, setBooks] = useState<StoredBook[]>([]);
-  const [selectedStatus, setSelectedStatus] = useState<BookStatus | undefined>(undefined);
+  const [selectedStatus, setSelectedStatus] = useState<BookStatusValue | undefined>(undefined);
 
   // 使用 useBooks 钩子获取书籍数据和操作方法
   const {
@@ -51,6 +51,15 @@ export default function Command() {
     }
   }, [searchText, localResults, selectedStatus, allBooks, getBooksByStatus]);
 
+  const { planToRead, reading, finished, abandoned } = useMemo(() => {
+    return {
+      planToRead: allBooks.filter((book) => book.status === BookStatuses.plan_to_read.value),
+      reading: allBooks.filter((book) => book.status === BookStatuses.reading.value),
+      finished: allBooks.filter((book) => book.status === BookStatuses.finished.value),
+      abandoned: allBooks.filter((book) => book.status === BookStatuses.abandoned.value),
+    };
+  }, [allBooks]);
+
   // 构建网格部分
   const renderSections = () => {
     const sections = [];
@@ -68,16 +77,15 @@ export default function Command() {
 
     // 如果没有选中状态，按状态分组显示
     if (!selectedStatus && !searchText.trim()) {
-      // 获取各状态的书籍
-      const planToRead = allBooks.filter((book) => book.status === "打算看");
-      const reading = allBooks.filter((book) => book.status === "正在看");
-      const finished = allBooks.filter((book) => book.status === "看完");
-      const abandoned = allBooks.filter((book) => book.status === "放弃");
-
       // 添加各状态部分
       if (planToRead.length > 0) {
         sections.push(
-          <Grid.Section aspectRatio="2/3" fit={Grid.Fit.Fill} title="打算看" key="plan-to-read">
+          <Grid.Section
+            aspectRatio="2/3"
+            fit={Grid.Fit.Fill}
+            title={BookStatuses.plan_to_read.label}
+            key="plan-to-read"
+          >
             {planToRead.map((book) => (
               <BookItem
                 key={book.id}
@@ -94,7 +102,7 @@ export default function Command() {
 
       if (reading.length > 0) {
         sections.push(
-          <Grid.Section aspectRatio="2/3" fit={Grid.Fit.Fill} title="正在看" key="reading">
+          <Grid.Section aspectRatio="2/3" fit={Grid.Fit.Fill} title={BookStatuses.reading.label} key="reading">
             {reading.map((book) => (
               <BookItem
                 key={book.id}
@@ -111,7 +119,7 @@ export default function Command() {
 
       if (finished.length > 0) {
         sections.push(
-          <Grid.Section aspectRatio="2/3" fit={Grid.Fit.Fill} title="看完" key="finished">
+          <Grid.Section aspectRatio="2/3" fit={Grid.Fit.Fill} title={BookStatuses.finished.label} key="finished">
             {finished.map((book) => (
               <BookItem
                 key={book.id}
@@ -128,7 +136,7 @@ export default function Command() {
 
       if (abandoned.length > 0) {
         sections.push(
-          <Grid.Section aspectRatio="2/3" fit={Grid.Fit.Fill} title="放弃" key="abandoned">
+          <Grid.Section aspectRatio="2/3" fit={Grid.Fit.Fill} title={BookStatuses.abandoned.label} key="abandoned">
             {abandoned.map((book) => (
               <BookItem
                 key={book.id}
@@ -144,8 +152,9 @@ export default function Command() {
       }
     } else {
       // 添加过滤后或搜索结果部分
+      const statusTitle = selectedStatus ? getStatusConfig(selectedStatus).label : "所有书籍";
       sections.push(
-        <Grid.Section aspectRatio="2/3" fit={Grid.Fit.Fill} title={selectedStatus || "所有书籍"} key="filtered-books">
+        <Grid.Section aspectRatio="2/3" fit={Grid.Fit.Fill} title={statusTitle} key="filtered-books">
           {books.map((book) => (
             <BookItem
               key={book.id}
@@ -179,16 +188,15 @@ export default function Command() {
             if (newValue === "all") {
               setSelectedStatus(undefined);
             } else {
-              setSelectedStatus(newValue as BookStatus);
+              setSelectedStatus(newValue as BookStatusValue);
             }
           }}
         >
           <Grid.Dropdown.Section title="状态筛选">
             <Grid.Dropdown.Item title="所有书籍" value="all" />
-            <Grid.Dropdown.Item title="打算看" value="打算看" icon={{ source: Icon.List, tintColor: Color.Blue }} />
-            <Grid.Dropdown.Item title="正在看" value="正在看" icon={{ source: Icon.Book, tintColor: Color.Green }} />
-            <Grid.Dropdown.Item title="看完" value="看完" icon={{ source: Icon.Checkmark, tintColor: Color.Purple }} />
-            <Grid.Dropdown.Item title="放弃" value="放弃" icon={{ source: Icon.XMarkCircle, tintColor: Color.Red }} />
+            {getAllStatuses().map((status) => (
+              <Grid.Dropdown.Item key={status.value} title={status.label} value={status.value} icon={status.icon} />
+            ))}
           </Grid.Dropdown.Section>
         </Grid.Dropdown>
       }

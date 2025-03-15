@@ -1,25 +1,32 @@
-import { Action, ActionPanel, Color, Grid } from "@raycast/api";
-import { BookStatus, StoredBook } from "../types/book";
+import { Action, ActionPanel, Color, Grid, showToast, Toast } from "@raycast/api";
+import { BookStatusValue, BookStatuses, getStatusConfig, StoredBook } from "../types/book";
 import { RatingForm } from "./RatingForm";
 
 interface BookItemProps {
   book: StoredBook;
   onBookUpdated: () => void;
-  updateBookStatus: (bookId: string, status: BookStatus) => void;
+  updateBookStatus: (bookId: string, status: BookStatusValue) => void;
   removeBook: (bookId: string) => void;
   updateBookRating: (bookId: string, rating: number, comment?: string) => void;
 }
 
 export function BookItem({ book, onBookUpdated, updateBookStatus, removeBook, updateBookRating }: BookItemProps) {
+  // 获取当前状态配置
+  const statusConfig = getStatusConfig(book.status);
+
   // 修改状态的处理函数
-  const handleChangeStatus = async (status: BookStatus) => {
+  const handleChangeStatus = async (status: BookStatusValue) => {
     if (book.status === status) return;
 
     try {
       updateBookStatus(book.id, status);
       onBookUpdated();
     } catch (error) {
-      console.error("更新书籍状态失败:", error);
+      showToast({
+        style: Toast.Style.Failure,
+        title: "更新状态失败",
+        message: `无法将《${book.title}》状态更新为${getStatusConfig(status).label}`,
+      });
     }
   };
 
@@ -29,7 +36,11 @@ export function BookItem({ book, onBookUpdated, updateBookStatus, removeBook, up
       removeBook(book.id);
       onBookUpdated();
     } catch (error) {
-      console.error("删除书籍失败:", error);
+      showToast({
+        style: Toast.Style.Failure,
+        title: "删除失败",
+        message: `无法删除《${book.title}》`,
+      });
     }
   };
 
@@ -50,7 +61,8 @@ export function BookItem({ book, onBookUpdated, updateBookStatus, removeBook, up
       content={bookContent}
       title={book.title}
       subtitle={getSubtitle()}
-      keywords={[book.title, book.status]}
+      keywords={[book.title, statusConfig.label]}
+      accessory={{ icon: statusConfig.icon }}
       actions={
         <ActionPanel>
           <ActionPanel.Section title="书籍操作">
@@ -60,26 +72,15 @@ export function BookItem({ book, onBookUpdated, updateBookStatus, removeBook, up
             />
 
             <ActionPanel.Submenu title="修改状态">
-              <Action
-                title="打算看"
-                onAction={() => handleChangeStatus("打算看")}
-                icon={{ source: "list.bullet", tintColor: Color.Blue }}
-              />
-              <Action
-                title="正在看"
-                onAction={() => handleChangeStatus("正在看")}
-                icon={{ source: "book", tintColor: Color.Green }}
-              />
-              <Action
-                title="看完"
-                onAction={() => handleChangeStatus("看完")}
-                icon={{ source: "checkmark.circle", tintColor: Color.Purple }}
-              />
-              <Action
-                title="放弃"
-                onAction={() => handleChangeStatus("放弃")}
-                icon={{ source: "xmark.circle", tintColor: Color.Red }}
-              />
+              {Object.entries(BookStatuses).map(([key, status]) => (
+                <Action
+                  key={key}
+                  title={status.label}
+                  onAction={() => handleChangeStatus(status.value)}
+                  icon={status.icon}
+                  autoFocus={book.status !== status.value}
+                />
+              ))}
             </ActionPanel.Submenu>
 
             <Action
@@ -87,12 +88,13 @@ export function BookItem({ book, onBookUpdated, updateBookStatus, removeBook, up
               style={Action.Style.Destructive}
               onAction={handleRemoveBook}
               shortcut={{ modifiers: ["cmd"], key: "delete" }}
+              icon={{ source: "trash", tintColor: Color.Red }}
             />
           </ActionPanel.Section>
 
           <ActionPanel.Section title="其他操作">
-            <Action.OpenInBrowser url={book.url} title="在豆瓣中查看" />
-            <Action.CopyToClipboard title="复制书名" content={book.title} />
+            <Action.OpenInBrowser url={book.url} title="在豆瓣中查看" icon={{ source: "link" }} />
+            <Action.CopyToClipboard title="复制书名" content={book.title} icon={{ source: "doc.on.clipboard" }} />
           </ActionPanel.Section>
         </ActionPanel>
       }

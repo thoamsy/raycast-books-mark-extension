@@ -1,4 +1,4 @@
-import { BookStatus, StoredBook } from "../types/book";
+import { BookStatusValue, StoredBook } from "../types/book";
 import { nanoid } from "nanoid";
 
 export const BOOKS_STORAGE_KEY = "stored-books";
@@ -38,7 +38,7 @@ export function addBookToStore(
 /**
  * 更新一本书的状态
  */
-export function updateBookStatusInStore(books: StoredBook[], bookId: string, status: BookStatus): StoredBook[] {
+export function updateBookStatusInStore(books: StoredBook[], bookId: string, status: BookStatusValue): StoredBook[] {
   return books.map((book) => {
     if (book.id === bookId) {
       return { ...book, status, updatedAt: Date.now() };
@@ -79,7 +79,7 @@ export function removeBookFromStore(books: StoredBook[], bookId: string): Stored
 /**
  * 根据状态过滤书籍
  */
-export function filterBooksByStatus(books: StoredBook[], status?: BookStatus): StoredBook[] {
+export function filterBooksByStatus(books: StoredBook[], status?: BookStatusValue): StoredBook[] {
   if (!status) {
     return books;
   }

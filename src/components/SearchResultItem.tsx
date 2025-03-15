@@ -1,5 +1,5 @@
-import { Action, ActionPanel, Grid } from "@raycast/api";
-import { DoubanBook, StoredBook } from "../types/book";
+import { Action, ActionPanel, Grid, showToast, Toast } from "@raycast/api";
+import { BookStatusValue, BookStatuses, DoubanBook, StoredBook } from "../types/book";
 
 interface SearchResultItemProps {
   book: DoubanBook;
@@ -9,7 +9,7 @@ interface SearchResultItemProps {
 
 export function SearchResultItem({ book, onBookAdded, addBook }: SearchResultItemProps) {
   // 添加书籍的处理函数
-  const handleAddBook = async (status: "打算看" | "正在看" | "看完") => {
+  const handleAddBook = async (status: BookStatusValue) => {
     try {
       const newBook = addBook({
         ...book,
@@ -17,7 +17,11 @@ export function SearchResultItem({ book, onBookAdded, addBook }: SearchResultIte
       });
       onBookAdded(newBook);
     } catch (error) {
-      console.error("添加书籍失败:", error);
+      showToast({
+        style: Toast.Style.Failure,
+        title: "添加失败",
+        message: `无法添加《${book.title}》`,
+      });
     }
   };
 
@@ -29,22 +33,19 @@ export function SearchResultItem({ book, onBookAdded, addBook }: SearchResultIte
       actions={
         <ActionPanel>
           <ActionPanel.Section title="添加书籍">
-            <Action
-              title="添加到「打算看」"
-              onAction={() => handleAddBook("打算看")}
-              icon={{ source: "list.bullet" }}
-            />
-            <Action title="添加到「正在看」" onAction={() => handleAddBook("正在看")} icon={{ source: "book" }} />
-            <Action
-              title="添加到「看完」"
-              onAction={() => handleAddBook("看完")}
-              icon={{ source: "checkmark.circle" }}
-            />
+            {Object.entries(BookStatuses).map(([key, status]) => (
+              <Action
+                key={key}
+                title={`添加到「${status.label}」`}
+                onAction={() => handleAddBook(status.value)}
+                icon={status.icon}
+              />
+            ))}
           </ActionPanel.Section>
 
           <ActionPanel.Section>
-            <Action.OpenInBrowser url={book.url} title="在豆瓣中查看" />
-            <Action.CopyToClipboard title="复制书名" content={book.title} />
+            <Action.OpenInBrowser url={book.url} title="在豆瓣中查看" icon={{ source: "link" }} />
+            <Action.CopyToClipboard title="复制书名" content={book.title} icon={{ source: "doc.on.clipboard" }} />
           </ActionPanel.Section>
         </ActionPanel>
       }

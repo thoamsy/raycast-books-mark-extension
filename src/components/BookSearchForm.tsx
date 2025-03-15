@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
-import { Action, ActionPanel, Form, useNavigation } from "@raycast/api";
-import { BookFormValues, DoubanBook, DoubanSearchResponse, StoredBook } from "../types/book";
+import { Action, ActionPanel, Form, useNavigation, showToast, Toast } from "@raycast/api";
+import { BookFormValues, BookStatuses, DoubanBook, DoubanSearchResponse, StoredBook } from "../types/book";
 import { useFetch } from "@raycast/utils";
 import { buildDoubanSearchUrl, parseDoubanSearchResponse } from "../utils/douban";
 
@@ -41,6 +41,11 @@ export function BookSearchForm({ onBookAdded, addBook }: BookSearchFormProps) {
 
   const handleSubmit = async (values: BookFormValues) => {
     if (!selectedBook) {
+      showToast({
+        style: Toast.Style.Failure,
+        title: "无法添加",
+        message: "请先选择一本书",
+      });
       return;
     }
 
@@ -56,7 +61,11 @@ export function BookSearchForm({ onBookAdded, addBook }: BookSearchFormProps) {
 
       pop();
     } catch (error) {
-      console.error("添加书籍失败:", error);
+      showToast({
+        style: Toast.Style.Failure,
+        title: "添加失败",
+        message: `无法添加《${selectedBook.title}》`,
+      });
     }
   };
 
@@ -88,11 +97,10 @@ export function BookSearchForm({ onBookAdded, addBook }: BookSearchFormProps) {
         </Form.Dropdown>
       )}
 
-      <Form.Dropdown id="status" title="状态" defaultValue="正在看">
-        <Form.Dropdown.Item value="打算看" title="打算看" />
-        <Form.Dropdown.Item value="正在看" title="正在看" />
-        <Form.Dropdown.Item value="看完" title="看完" />
-        <Form.Dropdown.Item value="放弃" title="放弃" />
+      <Form.Dropdown id="status" title="状态" defaultValue="reading">
+        {Object.entries(BookStatuses).map(([key, status]) => (
+          <Form.Dropdown.Item key={key} value={status.value} title={status.label} icon={status.icon} />
+        ))}
       </Form.Dropdown>
     </Form>
   );

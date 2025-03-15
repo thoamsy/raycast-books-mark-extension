@@ -1,6 +1,6 @@
 import { useCallback } from "react";
 import { useLocalStorage } from "@raycast/utils";
-import { BookStatus, StoredBook } from "../types/book";
+import { BookStatusValue, StoredBook } from "../types/book";
 import {
   BOOKS_STORAGE_KEY,
   addBookToStore,
@@ -27,7 +27,7 @@ export function useBooks() {
 
   // 更新一本书的状态
   const updateBookStatus = useCallback(
-    (bookId: string, status: BookStatus) => {
+    (bookId: string, status: BookStatusValue) => {
       setBooks(updateBookStatusInStore(books, bookId, status));
     },
     [books, setBooks],
@@ -51,7 +51,7 @@ export function useBooks() {
 
   // 获取某状态的书籍
   const getBooksByStatus = useCallback(
-    (status?: BookStatus) => {
+    (status?: BookStatusValue) => {
       return filterBooksByStatus(books, status);
     },
     [books],

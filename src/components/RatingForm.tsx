@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Action, ActionPanel, Form, useNavigation } from "@raycast/api";
+import { Action, ActionPanel, Form, useNavigation, showToast, Toast } from "@raycast/api";
 import { RatingFormValues, StoredBook } from "../types/book";
 
 interface RatingFormProps {
@@ -13,7 +13,14 @@ export function RatingForm({ book, onRatingUpdated, updateBookRating }: RatingFo
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async (values: RatingFormValues) => {
-    if (!updateBookRating) return;
+    if (!updateBookRating) {
+      showToast({
+        style: Toast.Style.Failure,
+        title: "评分失败",
+        message: "更新评分功能不可用",
+      });
+      return;
+    }
 
     setIsSubmitting(true);
     try {
@@ -23,9 +30,19 @@ export function RatingForm({ book, onRatingUpdated, updateBookRating }: RatingFo
         onRatingUpdated();
       }
 
+      showToast({
+        style: Toast.Style.Success,
+        title: "评分成功",
+        message: `《${book.title}》的评分已更新`,
+      });
+
       pop();
     } catch (error) {
-      console.error("更新评分失败:", error);
+      showToast({
+        style: Toast.Style.Failure,
+        title: "评分失败",
+        message: `无法更新《${book.title}》的评分`,
+      });
     } finally {
       setIsSubmitting(false);
     }
@@ -36,7 +53,7 @@ export function RatingForm({ book, onRatingUpdated, updateBookRating }: RatingFo
       isLoading={isSubmitting}
       actions={
         <ActionPanel>
-          <Action.SubmitForm title="提交评分" onSubmit={handleSubmit} />
+          <Action.SubmitForm title="提交评分" onSubmit={handleSubmit} icon={{ source: "star" }} />
         </ActionPanel>
       }
     >
