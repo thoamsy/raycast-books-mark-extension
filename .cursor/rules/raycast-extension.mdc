@@ -1,0 +1,13 @@
+---
+description: Here is a raycast extension
+globs: src/**/*.tsx?
+alwaysApply: false
+---
+
+# Raycast extension
+
+- React 18
+- no fetch directly, use `useFetch`, https://developers.raycast.com/utilities/react-hooks/usefetch
+- useLocalStorage for storage, https://developers.raycast.com/utilities/react-hooks/uselocalstorage
+- it's quite difference with standard web dev, no css
+- use pnpm in favor of npm
