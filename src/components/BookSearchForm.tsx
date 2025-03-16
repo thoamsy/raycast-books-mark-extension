@@ -1,19 +1,25 @@
 import { useState, useEffect } from "react";
-import { Action, ActionPanel, Form, useNavigation, showToast, Toast } from "@raycast/api";
+import { Action, ActionPanel, Form, useNavigation, showToast, Toast, showHUD, PopToRootType } from "@raycast/api";
 import { BookFormValues, BookStatuses, DoubanBook, DoubanSearchResponse, StoredBook } from "../types/book";
 import { useFetch } from "@raycast/utils";
 import { buildDoubanSearchUrl, parseDoubanSearchResponse } from "../utils/douban";
+import { useBooks } from "../hooks/useBooks";
 
 // 用于防抖的延迟时间
 const DEBOUNCE_DELAY = 300;
 
 interface BookSearchFormProps {
   onBookAdded?: (book: StoredBook) => void;
-  addBook: (book: Omit<StoredBook, "id" | "addedAt">) => StoredBook;
+  addBook?: (book: Omit<StoredBook, "id" | "addedAt">) => StoredBook;
 }
 
-export function BookSearchForm({ onBookAdded, addBook }: BookSearchFormProps) {
+export function BookSearchForm({ onBookAdded, addBook: externalAddBook }: BookSearchFormProps) {
   const { pop } = useNavigation();
+  const { addBook: internalAddBook } = useBooks();
+
+  // 使用外部传入的 addBook 或内部的 addBook
+  const addBook = externalAddBook || internalAddBook;
+
   const [query, setQuery] = useState("");
   const [debouncedQuery, setDebouncedQuery] = useState("");
   const [selectedBook, setSelectedBook] = useState<DoubanBook | undefined>();
@@ -31,13 +37,13 @@ export function BookSearchForm({ onBookAdded, addBook }: BookSearchFormProps) {
   // 使用 useFetch 进行搜索
   const searchUrl = debouncedQuery ? buildDoubanSearchUrl(debouncedQuery) : "";
 
-  const { data: responseData, isLoading } = useFetch<DoubanSearchResponse>(searchUrl, {
+  const { data: responseData, isLoading: fetchLoading } = useFetch<DoubanSearchResponse>(searchUrl, {
     execute: Boolean(debouncedQuery),
     keepPreviousData: false,
   });
 
   // 解析搜索结果
-  const searchResults = responseData ? parseDoubanSearchResponse(responseData) : [];
+  const searchResultsData = responseData ? parseDoubanSearchResponse(responseData) : [];
 
   const handleSubmit = async (values: BookFormValues) => {
     if (!selectedBook) {
@@ -59,7 +65,18 @@ export function BookSearchForm({ onBookAdded, addBook }: BookSearchFormProps) {
         onBookAdded(newBook);
       }
 
-      pop();
+      if (typeof externalAddBook === "function") {
+        pop();
+        showToast({
+          style: Toast.Style.Success,
+          title: "添加成功",
+          message: `已添加《${selectedBook.title}》`,
+        });
+      } else {
+        showHUD(`已添加《${selectedBook.title}》`, {
+          popToRootType: PopToRootType.Immediate,
+        });
+      }
     } catch (error) {
       showToast({
         style: Toast.Style.Failure,
@@ -71,7 +88,7 @@ export function BookSearchForm({ onBookAdded, addBook }: BookSearchFormProps) {
 
   return (
     <Form
-      isLoading={isLoading}
+      isLoading={fetchLoading}
       actions={
         <ActionPanel>
           <Action.SubmitForm title="添加书籍" onSubmit={handleSubmit} />
@@ -82,16 +99,16 @@ export function BookSearchForm({ onBookAdded, addBook }: BookSearchFormProps) {
 
       <Form.TextField id="query" title="书名" placeholder="输入书名搜索..." value={query} onChange={setQuery} />
 
-      {searchResults.length > 0 && (
+      {searchResultsData.length > 0 && (
         <Form.Dropdown
           id="book"
           title="搜索结果"
           onChange={(value) => {
-            const selected = searchResults.find((book) => book.url === value);
+            const selected = searchResultsData.find((book) => book.url === value);
             setSelectedBook(selected);
           }}
         >
-          {searchResults.map((book) => (
+          {searchResultsData.map((book) => (
             <Form.Dropdown.Item key={book.url} value={book.url} title={book.title} icon={book.cover_url} />
           ))}
         </Form.Dropdown>

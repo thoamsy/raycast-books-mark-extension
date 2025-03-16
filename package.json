@@ -17,7 +17,14 @@
       "description": "",
       "mode": "view"
     }
-  ],
+  ,
+    {
+      "name": "add-new-book",
+      "title": "Add new book",
+      "description": "添加书，配合快捷键+selection 功能实现快速添加",
+      "mode": "view"
+    }
+      ],
   "dependencies": {
     "@raycast/api": "^1.93.2",
     "@raycast/utils": "^1.17.0",

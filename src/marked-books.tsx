@@ -110,8 +110,8 @@ export default function Command() {
     if (!selectedStatus && !searchText.trim()) {
       // 为每种状态创建部分
       statusGroups.push(
-        { title: BookStatuses.plan_to_read.label, books: planToRead },
         { title: BookStatuses.reading.label, books: reading },
+        { title: BookStatuses.plan_to_read.label, books: planToRead },
         { title: BookStatuses.finished.label, books: finished },
         { title: BookStatuses.abandoned.label, books: abandoned },
       );
