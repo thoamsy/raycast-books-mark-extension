@@ -41,7 +41,14 @@ export function addBookToStore(
 export function updateBookStatusInStore(books: StoredBook[], bookId: string, status: BookStatusValue): StoredBook[] {
   return books.map((book) => {
     if (book.id === bookId) {
-      return { ...book, status, updatedAt: Date.now() };
+      const now = Date.now();
+      return {
+        ...book,
+        status,
+        updatedAt: now,
+        // 如果状态是 finished，添加完成时间；如果不是，移除完成时间
+        ...(status === "finished" ? { finishedAt: now } : { finishedAt: undefined }),
+      };
     }
     return book;
   });

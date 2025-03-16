@@ -67,6 +67,7 @@ export interface StoredBook extends DoubanBook {
   rating?: number;
   comment?: string;
   updatedAt?: number;
+  finishedAt?: number;
 }
 
 export interface BookFormValues {
