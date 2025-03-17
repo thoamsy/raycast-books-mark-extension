@@ -11,16 +11,17 @@ const DEBOUNCE_DELAY = 300;
 interface BookSearchFormProps {
   onBookAdded?: (book: StoredBook) => void;
   addBook?: (book: Omit<StoredBook, "id" | "addedAt">) => StoredBook;
+  initialTitle?: string;
 }
 
-export function BookSearchForm({ onBookAdded, addBook: externalAddBook }: BookSearchFormProps) {
+export function BookSearchForm({ onBookAdded, addBook: externalAddBook, initialTitle = "" }: BookSearchFormProps) {
   const { pop } = useNavigation();
   const { addBook: internalAddBook } = useBooks();
 
   // 使用外部传入的 addBook 或内部的 addBook
   const addBook = externalAddBook || internalAddBook;
 
-  const [query, setQuery] = useState("");
+  const [query, setQuery] = useState(initialTitle);
   const [debouncedQuery, setDebouncedQuery] = useState("");
   const [selectedBook, setSelectedBook] = useState<DoubanBook | undefined>();
 
