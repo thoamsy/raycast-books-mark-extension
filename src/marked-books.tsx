@@ -126,7 +126,7 @@ export default function Command() {
     statusGroups.forEach(({ title, books }) => {
       if (books.length > 0) {
         sections.push(
-          <Grid.Section aspectRatio="2/3" fit={Grid.Fit.Fill} title={title} key={title}>
+          <Grid.Section aspectRatio="2/3" fit={Grid.Fit.Fill} title={`${title} (${books.length})`} key={title}>
             {books.map((book) => (
               <BookItem
                 key={book.id}
