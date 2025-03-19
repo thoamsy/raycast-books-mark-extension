@@ -1,4 +1,4 @@
-import { Action, ActionPanel, Grid, Icon, showToast, Toast } from "@raycast/api";
+import { Action, ActionPanel, Grid, Icon, showToast, Toast, confirmAlert, Alert, open } from "@raycast/api";
 import { BookStatusValue, BookStatuses, getStatusConfig, StoredBook } from "../types/book";
 import { RatingForm } from "./RatingForm";
 
@@ -33,6 +33,9 @@ export function BookItem({
     try {
       updateBookStatus(book.id, status);
       onBookUpdated();
+      if (status === "finished") {
+        open("raycast://confetti");
+      }
     } catch (error) {
       showToast({
         style: Toast.Style.Failure,
@@ -44,6 +47,19 @@ export function BookItem({
 
   // 删除书籍的处理函数
   const handleRemoveBook = async () => {
+    // 添加确认对话框
+    const confirmed = await confirmAlert({
+      title: "确认删除",
+      message: `你确定要删除《${book.title}》吗？`,
+      rememberUserChoice: true,
+      primaryAction: {
+        title: "删除",
+        style: Alert.ActionStyle.Destructive,
+      },
+    });
+
+    if (!confirmed) return;
+
     try {
       removeBook(book.id);
       onBookUpdated();
@@ -118,7 +134,7 @@ export function BookItem({
               title="删除"
               style={Action.Style.Destructive}
               onAction={handleRemoveBook}
-              shortcut={{ modifiers: ["cmd"], key: "delete" }}
+              shortcut={{ modifiers: ["ctrl"], key: "x" }}
             />
           </ActionPanel.Section>
 
