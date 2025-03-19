@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
-import { ActionPanel, Action, Grid, showToast, Toast, Icon } from "@raycast/api";
+import { ActionPanel, Action, Grid, showToast, Toast, Icon, Color } from "@raycast/api";
 import { BookStatusValue, BookStatuses, getAllStatuses, getStatusConfig, StoredBook } from "./types/book";
 import { BookItem } from "./components/BookItem";
 import { BookSearchForm } from "./components/BookSearchForm";
@@ -89,13 +89,46 @@ export default function Command() {
     setColumns(5);
   };
 
+  // 检查是否没有书籍可显示
+  const isEmpty = useMemo(() => {
+    if (hasRemoteResults && searchText.trim()) {
+      return remoteBooks.length === 0;
+    }
+
+    if (selectedStatus) {
+      return getBooksByStatus(selectedStatus).length === 0;
+    }
+
+    return allBooks.length === 0;
+  }, [hasRemoteResults, searchText, remoteBooks.length, selectedStatus, getBooksByStatus, allBooks.length]);
+
   // 构建网格部分
   const renderSections = () => {
+    // 如果没有书籍可显示，返回空视图
+    if (isEmpty) {
+      return (
+        <Grid.EmptyView
+          title="没有书籍"
+          description="在搜索框中输入书名可以直接搜索并添加新书"
+          icon={{ source: Icon.Book, tintColor: Color.Blue }}
+          actions={
+            <ActionPanel>
+              <Action.Push
+                title="添加新书"
+                icon={Icon.Plus}
+                shortcut={{ modifiers: ["cmd"], key: "n" }}
+                target={<BookSearchForm onBookAdded={handleBookAdded} addBook={addBook} />}
+              />
+            </ActionPanel>
+          }
+        />
+      );
+    }
+
     const sections = [];
 
     // 如果有远程搜索结果，添加搜索结果部分
     if (hasRemoteResults && searchText.trim()) {
-      // statusGroups.push({ title: "搜索结果", books: remoteBooks });
       sections.push(
         <Grid.Section aspectRatio="2/3" fit={Grid.Fit.Fill} title="搜索结果" key="search-results">
           {remoteBooks.map((book) => (
