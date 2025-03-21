@@ -139,8 +139,12 @@ export function BookItem({
           </ActionPanel.Section>
 
           <ActionPanel.Section title="其他操作">
-            <Action.OpenInBrowser url={book.url} title="在豆瓣中查看" />
-            <Action.CopyToClipboard title="复制书名" content={book.title} />
+            <Action.OpenInBrowser shortcut={{ modifiers: ["cmd"], key: "o" }} url={book.url} title="在豆瓣中查看" />
+            <Action.CopyToClipboard
+              shortcut={{ modifiers: ["cmd", "shift"], key: "c" }}
+              title="复制书名"
+              content={book.title}
+            />
           </ActionPanel.Section>
         </ActionPanel>
       }
