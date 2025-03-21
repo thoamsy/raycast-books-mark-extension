@@ -38,13 +38,23 @@ export function BookSearchForm({ onBookAdded, addBook: externalAddBook, initialT
   // 使用 useFetch 进行搜索
   const searchUrl = debouncedQuery ? buildDoubanSearchUrl(debouncedQuery) : "";
 
-  const { data: responseData, isLoading: fetchLoading } = useFetch<DoubanSearchResponse>(searchUrl, {
+  const { data: searchResultsData = [], isLoading: fetchLoading } = useFetch<
+    DoubanSearchResponse,
+    unknown,
+    DoubanBook[]
+  >(searchUrl, {
     execute: Boolean(debouncedQuery),
     keepPreviousData: false,
+    onData: (data) => {
+      setSelectedBook(data?.[0]);
+    },
+    mapResult(data) {
+      return {
+        data: parseDoubanSearchResponse(data),
+        hasMore: false,
+      };
+    },
   });
-
-  // 解析搜索结果
-  const searchResultsData = responseData ? parseDoubanSearchResponse(responseData) : [];
 
   const handleSubmit = async (values: BookFormValues) => {
     if (!selectedBook) {
@@ -114,6 +124,7 @@ export function BookSearchForm({ onBookAdded, addBook: externalAddBook, initialT
           ))}
         </Form.Dropdown>
       )}
+      {searchResultsData.length > 0 && selectedBook && <Form.Description text={selectedBook.card_subtitle} />}
 
       <Form.Dropdown id="status" title="状态" defaultValue="reading">
         {Object.entries(BookStatuses).map(([key, status]) => (
