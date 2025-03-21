@@ -1,4 +1,4 @@
-import { useCallback } from "react";
+import { useCallback, useMemo } from "react";
 import { useLocalStorage } from "@raycast/utils";
 import { BookStatusValue, StoredBook } from "../types/book";
 import {
@@ -10,6 +10,7 @@ import {
   filterBooksByStatus,
   searchBooksInStore,
 } from "../store/bookStore";
+import orderBy from "lodash.orderby";
 
 export function useBooks() {
   // 使用 useLocalStorage 来管理书籍数据
@@ -65,8 +66,13 @@ export function useBooks() {
     [books],
   );
 
+  const booksOrderByAddedAt = useMemo(() => {
+    return orderBy(books, ["addedAt"], ["desc"]) ?? [];
+  }, [books]);
+
   return {
     books,
+    booksOrderByAddedAt,
     addBook,
     updateBookStatus,
     updateBookRating,

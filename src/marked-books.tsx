@@ -15,7 +15,7 @@ export default function Command() {
 
   // 使用 useBooks 钩子获取书籍数据和操作方法
   const {
-    books: allBooks,
+    booksOrderByAddedAt: allBooks,
     getBooksByStatus,
     addBook,
     updateBookStatus,
