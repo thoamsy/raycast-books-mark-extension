@@ -1,9 +1,9 @@
 {
   "$schema": "https://www.raycast.com/schemas/extension.json",
   "name": "book-mark",
-  "title": "Book Mark",
+  "title": "Book Shelf",
   "description": "只支持中国用户，用豆瓣 API 搜索。标记你想看，再看，看过的书。",
-  "icon": "icon.png",
+  "icon": "logo.png",
   "author": "thoamsy",
   "categories": [
     "Productivity",
@@ -13,8 +13,8 @@
   "commands": [
     {
       "name": "marked-books",
-      "title": "Marked Books",
-      "description": "",
+      "title": "My Bookshelf",
+      "description": "书架，展示你标记的书",
       "mode": "view"
     },
     {
